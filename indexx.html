@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InversorIA — Tu IA financiera en español</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0A0A0F;color:#F0EDE6;font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    .grain{position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")}
+    .hero-bg{position:absolute;inset:0;overflow:hidden}
+    .hero-bg::before{content:'';position:absolute;top:-30%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);pointer-events:none}
+    .hero-bg::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);opacity:.4}
+    .grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:60px 60px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 100%);mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 100%)}
+    .nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,168,76,.08);backdrop-filter:blur(20px);background:rgba(10,10,15,.7)}
+    .logo{font-family:'Playfair Display',serif;font-size:22px;color:#C9A84C;letter-spacing:-.5px}
+    .logo span{color:#F0EDE6;font-style:italic}
+    .nav-cta{background:transparent;border:1px solid #7A6330;color:#C9A84C;padding:8px 20px;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:.05em;cursor:pointer;transition:all .2s}
+    .nav-cta:hover{background:rgba(201,168,76,.1);border-color:#C9A84C}
+    .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:120px 24px 80px}
+    .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(201,168,76,.25);background:rgba(201,168,76,.06);padding:6px 16px;border-radius:100px;font-size:12px;letter-spacing:.1em;color:#E8C97A;margin-bottom:32px;text-transform:uppercase}
+    .badge-dot{width:6px;height:6px;background:#C9A84C;border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .hero-title{font-family:'Playfair Display',serif;font-size:clamp(42px,7vw,86px);font-weight:700;line-height:1.05;letter-spacing:-2px;margin-bottom:24px;max-width:820px}
+    .hero-title em{font-style:italic;color:#C9A84C}
+    .hero-sub{font-size:clamp(16px,2vw,19px);color:#8A8799;max-width:500px;line-height:1.7;font-weight:300;margin-bottom:48px}
+    .waitlist-form{display:flex;width:100%;max-width:460px;border:1px solid rgba(201,168,76,.25);border-radius:3px;overflow:hidden;background:rgba(18,18,26,.8);backdrop-filter:blur(10px);margin-bottom:16px}
+    .waitlist-input{flex:1;background:transparent;border:none;outline:none;padding:16px 20px;color:#F0EDE6;font-family:'DM Sans',sans-serif;font-size:15px}
+    .waitlist-input::placeholder{color:#8A8799}
+    .waitlist-btn{background:#C9A84C;color:#0A0A0F;border:none;padding:16px 24px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:14px;cursor:pointer;transition:background .2s;white-space:nowrap;letter-spacing:.02em}
+    .waitlist-btn:hover{background:#E8C97A}
+    .waitlist-btn:disabled{opacity:.6;cursor:default;background:#7A6330}
+    .waitlist-note{font-size:12px;color:#8A8799;letter-spacing:.02em}
+    .success-msg{display:flex;align-items:center;gap:10px;color:#E8C97A;font-size:15px;padding:14px 24px;border:1px solid rgba(201,168,76,.2);border-radius:3px;background:rgba(201,168,76,.06);margin-bottom:16px}
+    .error-msg{display:flex;align-items:center;gap:10px;color:#E05C5C;font-size:13px;padding:10px 16px;border:1px solid rgba(224,92,92,.2);border-radius:3px;background:rgba(224,92,92,.05);margin-bottom:16px;max-width:460px}
+    .scroll-hint{position:absolute;bottom:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8A8799;font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+    .scroll-line{width:1px;height:40px;background:linear-gradient(#7A6330,transparent);animation:grow 1.5s ease-in-out infinite}
+    @keyframes grow{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}50.01%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+    .section{padding:100px 24px;max-width:1100px;margin:0 auto}
+    .section-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#C9A84C;margin-bottom:16px}
+    .section-title{font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,48px);line-height:1.15;letter-spacing:-1px;margin-bottom:16px}
+    .section-sub{color:#8A8799;font-size:17px;font-weight:300;max-width:480px;line-height:1.7;margin-bottom:64px}
+    .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:#1E1E2E;border:1px solid #1E1E2E}
+    .how-card{background:#12121A;padding:40px 36px;position:relative;transition:background .2s}
+    .how-card:hover{background:#161622}
+    .how-card::before{content:attr(data-num);position:absolute;top:36px;right:36px;font-family:'Playfair Display',serif;font-size:48px;color:rgba(201,168,76,.08);font-weight:700;line-height:1}
+    .how-icon{font-size:28px;margin-bottom:20px}
+    .how-card h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:12px;letter-spacing:-.3px}
+    .how-card p{color:#8A8799;font-size:15px;line-height:1.7;font-weight:300}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,#1E1E2E,transparent);margin:0 24px}
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:#1E1E2E;border:1px solid #1E1E2E;margin-top:48px}
+    .pricing-card{background:#12121A;padding:40px 36px;position:relative}
+    .pricing-card.featured{background:#14141F}
+    .pricing-card.featured::before{content:'MÁS POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:#C9A84C;color:#0A0A0F;font-size:10px;letter-spacing:.15em;padding:4px 16px;font-weight:500}
+    .plan-name{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#8A8799;margin-bottom:16px}
+    .plan-price{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;letter-spacing:-2px;line-height:1;margin-bottom:4px}
+    .plan-price span{font-size:20px;font-weight:400;color:#8A8799;letter-spacing:0}
+    .plan-period{color:#8A8799;font-size:13px;margin-bottom:28px}
+    .plan-features{list-style:none;margin-bottom:32px}
+    .plan-features li{font-size:14px;color:#8A8799;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:10px;font-weight:300}
+    .plan-features li::before{content:'—';color:#7A6330;font-size:12px;flex-shrink:0}
+    .plan-btn{width:100%;padding:14px;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:.05em;cursor:pointer;transition:all .2s;text-transform:uppercase}
+    .plan-btn.outline{background:transparent;border:1px solid #1E1E2E;color:#8A8799}
+    .plan-btn.outline:hover{border-color:#7A6330;color:#C9A84C}
+    .plan-btn.gold{background:#C9A84C;border:none;color:#0A0A0F}
+    .plan-btn.gold:hover{background:#E8C97A}
+    .ticker-bar{border-top:1px solid #1E1E2E;border-bottom:1px solid #1E1E2E;background:#12121A;padding:14px 0;overflow:hidden}
+    .ticker-track{display:flex;gap:60px;animation:ticker 30s linear infinite;white-space:nowrap}
+    @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .ticker-item{display:flex;align-items:center;gap:10px;font-size:13px;color:#8A8799;letter-spacing:.05em}
+    .up{color:#4CAF88}.dn{color:#E05C5C}
+    .cta-section{padding:120px 24px;text-align:center;position:relative}
+    .cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(201,168,76,.08) 0%,transparent 70%);pointer-events:none}
+    .footer{padding:40px 24px;border-top:1px solid #1E1E2E;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:16px}
+    .footer-note{font-size:13px;color:#8A8799;font-weight:300}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeInUp .7s ease both}
+    .fade-in-1{animation-delay:.1s}.fade-in-2{animation-delay:.25s}.fade-in-3{animation-delay:.4s}.fade-in-4{animation-delay:.55s}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // ============================================================
+    //  🔴 IMPORTANTE: Reemplaza esta URL con la tuya de Apps Script
+    // ============================================================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbygTgqr1qUdR4dVUGP24nxqu7jazKAmsgxr1ZlOCTPWkaycHA2seoGYgA99es0v0W6MWQ/exec/exec";
+
+    const tickers = [
+      { sym: "XRP",  price: "$2.41",   chg: "+4.2%", up: true  },
+      { sym: "BTC",  price: "$94,820", chg: "+1.8%", up: true  },
+      { sym: "ETH",  price: "$3,140",  chg: "-0.5%", up: false },
+      { sym: "LINK", price: "$18.72",  chg: "+6.1%", up: true  },
+      { sym: "SOL",  price: "$172.30", chg: "+2.9%", up: true  },
+      { sym: "ACHR", price: "$8.44",   chg: "-1.2%", up: false },
+      { sym: "AAPL", price: "$211.50", chg: "+0.8%", up: true  },
+      { sym: "NVDA", price: "$875.20", chg: "+3.4%", up: true  },
+    ];
+
+    function App() {
+      const [email, setEmail]       = useState("");
+      const [status, setStatus]     = useState("idle");
+      const [errorMsg, setErrorMsg] = useState("");
+      const [count, setCount]       = useState(247);
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          if (Math.random() > 0.7) setCount(c => c + 1);
+        }, 8000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+      const handleSubmit = async () => {
+        if (!isValidEmail(email)) {
+          setErrorMsg("Por favor escribe un email válido.");
+          setStatus("error");
+          return;
+        }
+        setStatus("loading");
+        setErrorMsg("");
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          setStatus("success");
+          setCount(c => c + 1);
+        } catch {
+          setErrorMsg("Algo salió mal. Intenta de nuevo.");
+          setStatus("error");
+        }
+      };
+
+      const scrollToWaitlist = () =>
+        document.getElementById("waitlist").scrollIntoView({ behavior: "smooth" });
+
+      return (
+        <>
+          <div className="grain" />
+
+          <nav className="nav">
+            <div className="logo">Inversor<span>IA</span></div>
+            <button className="nav-cta" onClick={scrollToWaitlist}>Lista de espera</button>
+          </nav>
+
+          <div className="ticker-bar">
+            <div className="ticker-track">
+              {[...tickers, ...tickers].map((t, i) => (
+                <div className="ticker-item" key={i}>
+                  <strong style={{color:"#F0EDE6"}}>{t.sym}</strong>
+                  {t.price}
+                  <span className={t.up ? "up" : "dn"}>{t.chg}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <section className="hero">
+            <div className="hero-bg"><div className="grid-lines" /></div>
+
+            <div className="badge fade-in fade-in-1">
+              <span className="badge-dot" />
+              {count} personas en lista de espera
+            </div>
+
+            <h1 className="hero-title fade-in fade-in-2">
+              Tu primera <em>IA financiera</em> en español
+            </h1>
+
+            <p className="hero-sub fade-in fade-in-3">
+              Analiza acciones y criptos en segundos. Sin jerga de Wall Street.
+              Sin necesitar miles de dólares. Solo decisiones claras, en tu idioma.
+            </p>
+
+            <div id="waitlist" style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%"}} className="fade-in fade-in-4">
+              {status === "success" ? (
+                <>
+                  <div className="success-msg">
+                    <span>✦</span> ¡Listo! Eres el #{count} en la lista. Te avisamos primero.
+                  </div>
+                  <p className="waitlist-note">Revisa tu inbox. Te llegará confirmación en minutos.</p>
+                </>
+              ) : (
+                <>
+                  <div className="waitlist-form">
+                    <input
+                      className="waitlist-input"
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={email}
+                      onChange={e => { setEmail(e.target.value); setStatus("idle"); }}
+                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                      disabled={status === "loading"}
+                    />
+                    <button className="waitlist-btn" onClick={handleSubmit} disabled={status === "loading"}>
+                      {status === "loading" ? "Guardando..." : "Quiero acceso →"}
+                    </button>
+                  </div>
+                  {status === "error" && <div className="error-msg">⚠ {errorMsg}</div>}
+                  <p className="waitlist-note">Precio de fundador bloqueado de por vida. Sin tarjeta.</p>
+                </>
+              )}
+            </div>
+
+            <div className="scroll-hint">
+              <div className="scroll-line" />
+              scroll
+            </div>
+          </section>
+
+          <div className="divider" />
+
+          <div className="section">
+            <p className="section-label">Cómo funciona</p>
+            <h2 className="section-title">Tres pasos.<br />Cero confusión.</h2>
+            <p className="section-sub">Diseñado para el inversionista que empieza con poco capital y quiere aprender sin perderse.</p>
+            <div className="how-grid">
+              {[
+                { num:"01", icon:"🔍", title:"Escribe qué quieres analizar", desc:"Cualquier acción o cripto. Solo escribe el nombre o símbolo y deja que la IA haga el trabajo." },
+                { num:"02", icon:"⚡", title:"IA analiza datos en tiempo real", desc:"Procesamos precio, volumen, catalizadores, noticias y tendencias del mercado en segundos." },
+                { num:"03", icon:"✦",  title:"Recibes una recomendación clara", desc:"Sin gráficas confusas. Solo: qué está pasando, qué hacer, y por qué. En español simple." },
+              ].map((c,i) => (
+                <div className="how-card" key={i} data-num={c.num}>
+                  <div className="how-icon">{c.icon}</div>
+                  <h3>{c.title}</h3>
+                  <p>{c.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          <div className="section">
+            <p className="section-label">Precios</p>
+            <h2 className="section-title">Empieza gratis.<br />Escala cuando quieras.</h2>
+            <div className="pricing-grid">
+              {[
+                { name:"Explorador", price:"0", period:"para siempre", features:["5 análisis por día","Acciones y criptos principales","Resumen básico en español","Sin tarjeta de crédito"], btn:"outline", btnLabel:"Empezar gratis" },
+                { name:"Inversor", price:"15", period:"/ mes · precio de fundador", features:["Análisis ilimitados","Alertas de oportunidades","Portafolio con seguimiento IA","Acceso prioritario a nuevas funciones","Precio bloqueado de por vida"], btn:"gold", btnLabel:"Unirme a la lista →", featured:true },
+                { name:"Pro", price:"39", period:"/ mes", features:["Todo de Inversor","API para tus propios proyectos","Análisis de portafolio completo","Soporte directo por WhatsApp","Reportes PDF exportables"], btn:"outline", btnLabel:"Próximamente" },
+              ].map((p,i) => (
+                <div className={`pricing-card ${p.featured?"featured":""}`} key={i}>
+                  <p className="plan-name">{p.name}</p>
+                  <div className="plan-price">${p.price}<span> USD</span></div>
+                  <p className="plan-period">{p.period}</p>
+                  <ul className="plan-features">{p.features.map((f,j)=><li key={j}>{f}</li>)}</ul>
+                  <button className={`plan-btn ${p.btn}`} onClick={p.featured?scrollToWaitlist:undefined}>{p.btnLabel}</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          <div className="cta-section">
+            <p className="section-label" style={{marginBottom:24}}>¿Listo para empezar?</p>
+            <h2 className="section-title" style={{maxWidth:600,margin:"0 auto 20px"}}>
+              El mercado no espera.<br /><em style={{color:"#C9A84C"}}>Tú tampoco deberías.</em>
+            </h2>
+            <p style={{color:"#8A8799",fontSize:17,fontWeight:300,marginBottom:40}}>
+              Únete antes del lanzamiento y bloquea tu precio fundador.
+            </p>
+            <button className="waitlist-btn" style={{fontSize:15,padding:"18px 48px",borderRadius:2}}
+              onClick={()=>{scrollToWaitlist();setStatus("idle")}}>
+              Reservar mi lugar →
+            </button>
+          </div>
+
+          <footer className="footer">
+            <div className="logo" style={{fontSize:18}}>Inversor<span>IA</span></div>
+            <p className="footer-note">© 2025 InversorIA · Herramienta educativa. No es asesoría financiera.</p>
+            <p className="footer-note" style={{color:"#7A6330"}}>En construcción ✦</p>
+          </footer>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
